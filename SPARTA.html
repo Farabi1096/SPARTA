@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPARTA MTD Sales Performance Dashboard</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f7f9;
+        }
+        /* Custom Gradient Fill for Header (VIBRANT GREEN-TO-PURPLE) */
+        .header-gradient {
+            /* Vibrant Green (#11998e) to Deep Violet (#6a0dad) - approx. 120deg */
+            background: linear-gradient(120deg, #11998e 0%, #6a0dad 100%); 
+        }
+
+        .gauge-meter {
+            height: 10px;
+            border-radius: 9999px;
+            overflow: hidden;
+            background-color: #e5e7eb; /* Gray-200 */
+        }
+        .gauge-fill {
+            transition: width 0.7s ease-out;
+            border-radius: 9999px;
+        }
+        /* RAG Colors for Gauge Fill & Background */
+        .fill-green { background-color: #10b981; } /* Emerald-500 */
+        .fill-amber { background-color: #f59e0b; } /* Amber-500 */
+        .fill-red { background-color: #ef4444; } /* Red-500 */
+        .fill-blue { background-color: #3b82f6; } /* Blue-500 for benchmark */
+        
+        /* RAG Colors for Rings/Text */
+        .ring-green { --tw-ring-color: #10b981; }
+        .ring-amber { --tw-ring-color: #f59e0b; }
+        .ring-red { --tw-ring-color: #ef4444; }
+        .ring-blue { --tw-ring-color: #3b82f6; }
+
+        .text-green { color: #10b981; }
+        .text-amber { color: #f59e0b; }
+        .text-red { color: #ef4444; }
+        .text-blue { color: #3b82f6; }
+        /* Added specific colors for comparison text */
+        .text-red-600 { color: #dc2626; } 
+        .text-green-600 { color: #059669; }
+
+        .text-gray-400 { color: #9ca3af; }
+
+        .chart-bar {
+            transition: width 0.7s ease-out;
+            height: 100%;
+            min-width: 1rem; /* Minimum width for visibility */
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8">
+
+    <div id="app" class="max-w-7xl mx-auto">
+
+        <!-- Header: Title, Subtitle, and Filter Controls -->
+        <header class="header-gradient p-6 rounded-xl shadow-xl mb-8 flex flex-col xl:flex-row justify-between items-start xl:items-center border border-gray-200">
+            <div class="mb-4 xl:mb-0">
+                <h1 class="text-3xl sm:text-4xl font-extrabold text-white">SPARTA MTD Sales Performance</h1>
+                <p class="text-lg text-gray-200 mt-1">(Data as of Nov 12th, 2025)</p>
+            </div>
+            
+            <!-- Filter Dropdowns Section (Compact layout) -->
+            <div id="filter-controls" class="flex flex-wrap gap-2 p-2 header-gradient rounded-lg shadow-lg border border-gray-400">
+                <!-- Dropdowns will be dynamically inserted here by JavaScript -->
+            </div>
+        </header>
+
+        <!-- KPI Cards Section (5 Cards) -->
+        <div id="kpi-cards" class="grid grid-cols-2 md:grid-cols-5 gap-6 md:gap-8 mb-10">
+            <!-- Cards will be dynamically inserted here -->
+        </div>
+
+        <!-- Section 2: Visuals (DB/SR Health & Territory Chart) -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+
+            <!-- Performance Status (DB & SR) -->
+            <div class="lg:col-span-1 bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">Performance Status (DB & SR)</h2>
+                <p class="text-sm text-gray-500 mb-4">No. of performers Above 90%, 85-90%, and Below 85% of Time elapsed %.</p>
+                
+                <!-- SR Status: Data from Overview.csv (Nov 12th Figures) - REMAINS STATIC -->
+                <div id="sr-health" class="mb-4">
+                    <h3 class="text-md font-semibold text-gray-700 mb-2">SR Status (Total: 53)</h3>
+                    <div class="flex h-6 rounded-full overflow-hidden text-xs font-semibold">
+                        <!-- Green: 12 / 53 = 22.64% (From Overview) -->
+                        <div class="chart-bar fill-green text-center text-white p-1" style="width: 22.64%;">12</div>
+                        <!-- Amber: 8 / 53 = 15.09% (From Overview) -->
+                        <div class="chart-bar fill-amber text-center text-white p-1" style="width: 15.09%;">8</div>
+                        <!-- Red: 33 / 53 = 62.26% (From Overview) -->
+                        <div class="chart-bar fill-red text-center text-white p-1" style="width: 62.26%;">33</div>
+                    </div>
+                    <div class="flex justify-between text-xs mt-1">
+                        <span class="text-green">Above 90%: 12</span>
+                        <span class="text-amber">85-90%: 8</span>
+                        <span class="text-red">Below 85%: 33</span>
+                    </div>
+                </div>
+
+                <!-- DB Status: This will be dynamically updated by updateDbStatus() -->
+                <div id="db-health">
+                    <h3 class="text-md font-semibold text-gray-700 mb-2">DB Status (Total: 12)</h3>
+                    <div class="flex h-6 rounded-full overflow-hidden text-xs font-semibold">
+                        <!-- Placeholder: Green -->
+                        <div id="db-bar-green" class="chart-bar fill-green text-center text-white p-1" style="width: 0%;">0</div>
+                        <!-- Placeholder: Amber -->
+                        <div id="db-bar-amber" class="chart-bar fill-amber text-center text-white p-1" style="width: 0%; min-width: 1.5rem;">0</div> 
+                        <!-- Placeholder: Red -->
+                        <div id="db-bar-red" class="chart-bar fill-red text-center text-white p-1" style="width: 0%;">0</div>
+                    </div>
+                    <div class="flex justify-between text-xs mt-1">
+                        <span class="text-green" id="db-label-green">Above 90%: 0</span>
+                        <span class="text-amber" id="db-label-amber">85-90%: 0</span>
+                        <span class="text-red" id="db-label-red">Below 85%: 0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Territory STT Achievement Chart -->
+            <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">Territory STT Achievement vs. Target</h2>
+                <p class="text-sm font-semibold text-gray-500 mb-4">Time Elapsed Target: <span class="text-blue">42.31%</span> (Ranked by Achievement)</p>
+
+                <div id="stt-chart" class="space-y-4">
+                    <!-- Chart bars populated by JS -->
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Section 3: Detailed Territory Table -->
+        <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100 mb-10">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Detailed Territory Performance MTD</h2>
+
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Territory</th>
+                            
+                            <!-- STT (Sales to Trade) -->
+                            <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">STT TGT (Lac)</th>
+                            <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">STT Ach (Lac)</th>
+                            <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">STT Ach %</th>
+                            
+                            <!-- ERC (Effective Reach Coverage) - REMOVED (Count) -->
+                            <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ERC TGT</th>
+                            <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ERC Ach</th>
+                            <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ERC Ach %</th>
+
+                            <!-- SF TBR (Sales Force Target Business Review) - REMOVED (Count) -->
+                            <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">SF TBR TGT</th>
+                            <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">SF TBR Ach</th>
+                            <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">SF TBR Ach %</th>
+                            
+                            <!-- Premium SKU - REMOVED (Count) -->
+                            <th scope="col" scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">P.SKU TGT</th>
+                            <th scope="col" scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">P.SKU Ach</th>
+                            <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">P.SKU Ach %</th>
+                        </tr>
+                    </thead>
+                    <tbody id="territory-list" class="bg-white divide-y divide-gray-200">
+                        <!-- Data will be populated here by JavaScript -->
+                    </tbody>
+                    <!-- Grand Total Row will be appended here by JS -->
+                </table>
+            </div>
+        </div>
+        
+        <!-- Section 4: Detailed DB Table -->
+        <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Detailed DB Performance MTD</h2>
+
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DB Name</th>
+                            
+                            <!-- STT (Sales to Trade) -->
+                            <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">STT TGT (Lac)</th>
+                            <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">STT Ach (Lac)</th>
+                            <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">STT Ach %</th>
+                            
+                            <!-- ERC (Effective Reach Coverage) - REMOVED (Count) -->
+                            <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ERC TGT</th>
+                            <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ERC Ach</th>
+                            <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ERC Ach %</th>
+
+                            <!-- SF TBR (Sales Force Target Business Review) - REMOVED (Count) -->
+                            <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">SF TBR TGT</th>
+                            <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">SF TBR Ach</th>
+                            <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">SF TBR Ach %</th>
+                            
+                            <!-- Premium SKU - REMOVED (Count) -->
+                            <th scope="col" scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">P.SKU TGT</th>
+                            <th scope="col" scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">P.SKU Ach</th>
+                            <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">P.SKU Ach %</th>
+                        </tr>
+                    </thead>
+                    <tbody id="db-list" class="bg-white divide-y divide-gray-200">
+                        <!-- Data will be populated here by JavaScript -->
+                    </tbody>
+                    <!-- Grand Total Row will be appended here by JS -->
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- GLOBAL DATA & BENCHMARKS ---
+        const timeElapsedPercent = 42.31; // Benchmark set to Nov 12th (11/26 days)
+        const LAC_DIVISOR = 100000;
+        
+        // Object to track current selections
+        let selectedFilters = {
+            'Area': 'All Areas',
+            'Territory': 'All Territories',
+            'DB Name': 'All DBs'
+        };
+
+
+        // UPDATED: Filter options dynamically extracted from #DSR-MTD Update.csv
+        const filterOptions = {
+            'Area': ['All Areas', 'CTG', 'DHAKA'],
+            'Territory': ['All Territories', 'CTG NORTH & SOUTH', 'DHAKA EAST', 'DHAKA NORTH MIRPUR', 'DHAKA NORTH UTTARA', 'DHAKA SOUTH', 'DHAKA WEST'],
+            'DB Name': ['All DBs', 'Karim Trading', 'ARC Trading', 'M/S Farid Enterprise', 'P M Traders', 'Madina Traders', 'Takwa Enterprise', 'Unitrust Trading Co.', 'Paragon Marketing Limited', 'Self Tech Marketing Ltd', 'M/S Sanuar Enterprise', 'M/S Hasan Brothers Corporation', 'M/S Hasan Brothers Corporation 2'],
+        };
+        
+        // --- FULL SOURCE DATA (RENAME to avoid confusion with dynamic data) ---
+        // Data from #Territory Overview.csv (6 territories)
+        const fullTerritoryData = [
+            { 
+                territory: "DHAKA EAST", tm: "MESBA RAHMAN", area: "DHAKA", dhName: "Takwa Enterprise", 
+                sttTgt: 9196000, sttAch: 3162998.38, sttAchPercent: 34.39, 
+                ercTgt: 4000, ercAch: 2363, ercAchPercent: 59.08, 
+                sfTbrTgt: 500, sfTbrAch: 43, sfTbrAchPercent: 8.60,
+                premiumSkuGoal: 590, premiumSkuAch: 184, premiumSkuAchPercent: 31.19, dhCode: "B002", lead: "JAYANTA BANIK"
+            },
+            { 
+                territory: "DHAKA NORTH MIRPUR", tm: "FARHAN MORSHED KHAN", area: "DHAKA", dhName: "Paragon Marketing Limited", 
+                sttTgt: 6350000, sttAch: 1492336.04, sttAchPercent: 23.50, 
+                ercTgt: 2700, ercAch: 810, ercAchPercent: 30.00, 
+                sfTbrTgt: 320, sfTbrAch: 10, sfTbrAchPercent: 3.13,
+                premiumSkuGoal: 310, premiumSkuAch: 21, premiumSkuAchPercent: 6.77, dhCode: "B006", lead: "JAYANTA BANIK"
+            },
+            { 
+                territory: "DHAKA NORTH UTTARA", tm: "NURUL ALAM", area: "DHAKA", dhName: "Self Tech Marketing Ltd", 
+                sttTgt: 3420000, sttAch: 1317912.24, sttAchPercent: 38.54, 
+                ercTgt: 1700, ercAch: 909, ercAchPercent: 53.47, 
+                sfTbrTgt: 220, sfTbrAch: 111, sfTbrAchPercent: 50.45,
+                premiumSkuGoal: 220, premiumSkuAch: 65, premiumSkuAchPercent: 29.55, dhCode: "B008", lead: "JAYANTA BANIK"
+            },
+            { 
+                territory: "DHAKA SOUTH", tm: "RAYHAN MASUD", area: "DHAKA", dhName: "M/S Sanuar Enterprise", 
+                sttTgt: 3403000, sttAch: 1028351.44, sttAchPercent: 30.22, 
+                ercTgt: 1500, ercAch: 682, ercAchPercent: 45.47, 
+                sfTbrTgt: 350, sfTbrAch: 78, sfTbrAchPercent: 22.29,
+                premiumSkuGoal: 300, premiumSkuAch: 50, premiumSkuAchPercent: 16.67, dhCode: "B003", lead: "JAYANTA BANIK"
+            },
+            { 
+                territory: "DHAKA WEST", tm: "NOOR MD. HABIBULLAH", area: "DHAKA", dhName: "M/S Hasan Brothers Corporation 2", 
+                sttTgt: 10290000, sttAch: 2464782.16, sttAchPercent: 24.00, 
+                ercTgt: 3649, ercAch: 1603, ercAchPercent: 43.93, 
+                sfTbrTgt: 277, sfTbrAch: 14, sfTbrAchPercent: 5.05,
+                premiumSkuGoal: 392, premiumSkuAch: 77, premiumSkuAchPercent: 19.64, dhCode: "B007", lead: "JAYANTA BANIK"
+            },
+            { 
+                territory: "CTG NORTH & SOUTH", tm: "MONIRUZZAMAN MONIR", area: "CTG", dhName: "Karim Trading", 
+                sttTgt: 8743000, sttAch: 1970095.31, sttAchPercent: 22.53, 
+                ercTgt: 5328, ercAch: 1870, ercAchPercent: 35.10, 
+                sfTbrTgt: 450, sfTbrAch: 29, sfTbrAchPercent: 6.44,
+                premiumSkuGoal: 565, premiumSkuAch: 52, premiumSkuAchPercent: 9.20, dhCode: "B001", lead: "SHAJED KIBRIA"
+            }
+        ];
+        
+        // Data from #DB-MTD Update.csv (12 DBs)
+        const fullDbData = [
+            { dhName: "Karim Trading", area: "CTG", territory: "CTG NORTH & SOUTH", sttTgt: 2500000, sttAch: 0, sttAchPercent: 0.00, ercTgt: 1700, ercAch: 0, ercAchPercent: 0.00, sfTbrTgt: 500, sfTbrAch: 0, sfTbrAchPercent: 0.00, premiumSkuGoal: 200, premiumSkuAch: 0, premiumSkuAchPercent: 0.00 },
+            { dhName: "ARC Trading", area: "CTG", territory: "CTG NORTH & SOUTH", sttTgt: 2813000, sttAch: 935553.05, sttAchPercent: 33.26, ercTgt: 1500, ercAch: 923, ercAchPercent: 61.53, sfTbrTgt: 500, sfTbrAch: 16, sfTbrAchPercent: 3.20, premiumSkuGoal: 150, premiumSkuAch: 27, premiumSkuAchPercent: 18.00 },
+            { dhName: "M/S Farid Enterprise", area: "CTG", territory: "CTG NORTH & SOUTH", sttTgt: 1930000, sttAch: 418104.29, sttAchPercent: 21.66, ercTgt: 1500, ercAch: 673, ercAchPercent: 44.87, sfTbrTgt: 500, sfTbrAch: 11, sfTbrAchPercent: 2.20, premiumSkuGoal: 150, premiumSkuAch: 16, premiumSkuAchPercent: 10.67 },
+            { dhName: "P M Traders", area: "CTG", territory: "CTG NORTH & SOUTH", sttTgt: 800000, sttAch: 310515.68, sttAchPercent: 38.81, ercTgt: 428, ercAch: 187, ercAchPercent: 43.69, sfTbrTgt: 500, sfTbrAch: 2, sfTbrAchPercent: 0.40, premiumSkuGoal: 50, premiumSkuAch: 8, premiumSkuAchPercent: 16.00 },
+            { dhName: "Madina Traders", area: "CTG", territory: "CTG NORTH & SOUTH", sttTgt: 700000, sttAch: 305922.29, sttAchPercent: 43.70, ercTgt: 200, ercAch: 87, ercAchPercent: 43.50, sfTbrTgt: 500, sfTbrAch: 0, sfTbrAchPercent: 0.00, premiumSkuGoal: 15, premiumSkuAch: 1, premiumSkuAchPercent: 6.67 },
+            { dhName: "Takwa Enterprise", area: "DHAKA", territory: "DHAKA EAST", sttTgt: 6868000, sttAch: 2169608.28, sttAchPercent: 31.59, ercTgt: 2500, ercAch: 1573, ercAchPercent: 62.92, sfTbrTgt: 500, sfTbrAch: 39, sfTbrAchPercent: 7.80, premiumSkuGoal: 400, premiumSkuAch: 122, premiumSkuAchPercent: 30.50 },
+            { dhName: "Unitrust Trading Co.", area: "DHAKA", territory: "DHAKA EAST", sttTgt: 2328000, sttAch: 993390.10, sttAchPercent: 42.67, ercTgt: 1500, ercAch: 790, ercAchPercent: 52.67, sfTbrTgt: 500, sfTbrAch: 4, sfTbrAchPercent: 0.80, premiumSkuGoal: 190, premiumSkuAch: 62, premiumSkuAchPercent: 32.63 },
+            { dhName: "Paragon Marketing Limited", area: "DHAKA", territory: "DHAKA NORTH MIRPUR", sttTgt: 6350000, sttAch: 1492336.04, sttAchPercent: 23.50, ercTgt: 2700, ercAch: 810, ercAchPercent: 30.00, sfTbrTgt: 700, sfTbrAch: 10, sfTbrAchPercent: 1.43, premiumSkuGoal: 310, premiumSkuAch: 21, premiumSkuAchPercent: 6.77 },
+            { dhName: "Self Tech Marketing Ltd", area: "DHAKA", territory: "DHAKA NORTH UTTARA", sttTgt: 3420000, sttAch: 1317912.24, sttAchPercent: 38.54, ercTgt: 1700, ercAch: 909, ercAchPercent: 53.47, sfTbrTgt: 500, sfTbrAch: 8, sfTbrAchPercent: 1.60, premiumSkuGoal: 220, premiumSkuAch: 65, premiumSkuAchPercent: 29.55 },
+            { dhName: "M/S Sanuar Enterprise", area: "DHAKA", territory: "DHAKA SOUTH", sttTgt: 3403000, sttAch: 1028351.44, sttAchPercent: 30.22, ercTgt: 1500, ercAch: 682, ercAchPercent: 45.47, sfTbrTgt: 700, sfTbrAch: 21, sfTbrAchPercent: 3.00, premiumSkuGoal: 220, premiumSkuAch: 40, premiumSkuAchPercent: 18.18 },
+            { dhName: "M/S Hasan Brothers Corporation", area: "DHAKA", territory: "DHAKA WEST", sttTgt: 5145000, sttAch: 1280456.87, sttAchPercent: 24.89, ercTgt: 2000, ercAch: 928, ercAchPercent: 46.40, sfTbrTgt: 700, sfTbrAch: 11, sfTbrAchPercent: 1.57, premiumSkuGoal: 247, premiumSkuAch: 41, premiumSkuAchPercent: 16.60 },
+            { dhName: "M/S Hasan Brothers Corporation 2", area: "DHAKA", territory: "DHAKA WEST", sttTgt: 5145000, sttAch: 1184325.29, sttAchPercent: 23.02, ercTgt: 1649, ercAch: 675, ercAchPercent: 40.93, sfTbrTgt: 700, sfTbrAch: 3, sfTbrAchPercent: 0.43, premiumSkuGoal: 145, premiumSkuAch: 36, premiumSkuAchPercent: 24.83 }
+        ];
+
+        
+        // --- HELPER FUNCTIONS (DEFINED FIRST TO PREVENT ReferenceError) ---
+
+        function getRAGStatus(percentage) {
+            if (percentage >= timeElapsedPercent) {
+                return { color: 'fill-green', text: 'Green', ring: 'ring-green', textColor: 'text-green' };
+            } else if (percentage >= (timeElapsedPercent * 0.85)) {
+                return { color: 'fill-amber', text: 'Amber', ring: 'ring-amber', textColor: 'text-amber' };
+            } else {
+                return { color: 'fill-red', text: 'Red', ring: 'ring-red', textColor: 'text-red' };
+            }
+        }
+
+        function formatInLac(amount) {
+            return (amount / LAC_DIVISOR).toFixed(2);
+        }
+
+        function formatCount(amount) {
+            // Round to nearest whole number for counts
+            const roundedAmount = Math.round(amount);
+            return roundedAmount.toLocaleString('en-US', { maximumFractionDigits: 0 });
+        }
+        
+        function formatValue(value, unit) {
+            if (unit === "Lac") { 
+                return (value / LAC_DIVISOR).toFixed(2);
+            }
+            // All other units are counts
+            return formatCount(value);
+        }
+
+        function calculateGrandTotals(dataArray) {
+            const totals = {
+                sttTgt: 0, sttAch: 0, ercTgt: 0, ercAch: 0, 
+                sfTbrTgt: 0, sfTbrAch: 0, premiumSkuGoal: 0, premiumSkuAch: 0
+            };
+
+            dataArray.forEach(data => {
+                for (const key in totals) {
+                    if (data[key] && typeof data[key] === 'number') {
+                        totals[key] += data[key];
+                    }
+                }
+            });
+
+            // Calculate percentages dynamically based on the filtered totals
+            totals.sttAchPercent = (totals.sttTgt > 0) ? (totals.sttAch / totals.sttTgt) * 100 : 0;
+            totals.ercAchPercent = (totals.ercTgt > 0) ? (totals.ercAch / totals.ercTgt) * 100 : 0;
+            totals.sfTbrAchPercent = (totals.sfTbrTgt > 0) ? (totals.sfTbrAch / totals.sfTbrTgt) * 100 : 0;
+            totals.premiumSkuAchPercent = (totals.premiumSkuGoal > 0) ? (totals.premiumSkuAch / totals.premiumSkuGoal) * 100 : 0;
+            
+            return totals;
+        }
+        
+        function updateKpiData(totals) {
+            // Check if filtering is active (i.e., totals are derived from a subset of data)
+            const isFiltered = selectedFilters.Area !== 'All Areas' || selectedFilters.Territory !== 'All Territories' || selectedFilters['DB Name'] !== 'All DBs';
+
+            let kpiTotalSTT, kpiTotalERC, kpiTotalTBRTgt, kpiTotalTBRAch, kpiTotalPSKUTGT, kpiTotalPSKUACH, kpiTotalPSKUACHPercent;
+
+            if (isFiltered) {
+                // If filtered, use the calculated totals from the filtered subset
+                kpiTotalSTT = totals.sttAchPercent;
+                kpiTotalERC = totals.ercAchPercent;
+                kpiTotalTBRTgt = totals.sfTbrTgt;
+                kpiTotalTBRAch = totals.sfTbrAch; // For TBR, the main KPI card shows the count
+                kpiTotalPSKUTGT = totals.premiumSkuGoal;
+                kpiTotalPSKUACH = totals.premiumSkuAch;
+                kpiTotalPSKUACHPercent = totals.premiumSkuAchPercent;
+                
+            } else {
+                // If showing All Data, use the fixed summary row totals to match Excel overview
+                kpiTotalSTT = 27.62;
+                kpiTotalERC = 42.63;
+                kpiTotalTBRTgt = 2297; // Fixed Target from summary
+                kpiTotalTBRAch = 125; // Fixed Achieved Count from summary row
+                kpiTotalPSKUTGT = 2297; // Fixed Target from summary
+                kpiTotalPSKUACH = 439; // Fixed Achieved from summary
+                kpiTotalPSKUACHPercent = 19.11; // Fixed % from summary
+            }
+
+            const newKpiData = {
+                timeElapsed: {
+                    label: "Time Elapsed", 
+                    percentage: timeElapsedPercent,
+                    valueText: "11 out of 26 Working Days Passed", 
+                    rag: { color: 'fill-blue', border: 'border-blue', text: 'Benchmark', textColor: 'text-blue', ring: 'ring-blue' },
+                    isBenchmark: true
+                },
+                mtdStt: {
+                    label: "MTD STT Ach", 
+                    percentage: kpiTotalSTT, 
+                    unit: "Lac",
+                    target: isFiltered ? totals.sttTgt : 41402000, 
+                    achieved: isFiltered ? totals.sttAch : 11436475.3, 
+                    rag: null, 
+                    actualValue: kpiTotalSTT.toFixed(2) + "%"
+                },
+                mtdErc: {
+                    label: "MTD ERC Ach", 
+                    percentage: kpiTotalERC,
+                    unit: "Stores",
+                    target: isFiltered ? totals.ercTgt : 19276, 
+                    achieved: isFiltered ? totals.ercAch : 8217, 
+                    rag: null, 
+                    actualValue: kpiTotalERC.toFixed(2) + "%"
+                },
+                sfTbr: {
+                    label: "SF TBR Ach", 
+                    percentage: (kpiTotalTBRTgt > 0) ? (kpiTotalTBRAch / kpiTotalTBRTgt) * 100 : 0, // Calculate % dynamically for card display
+                    unit: "TBRs",
+                    target: kpiTotalTBRTgt, 
+                    achieved: kpiTotalTBRAch, 
+                    rag: null,
+                    actualValue: formatCount(kpiTotalTBRAch) // Display achieved count as main value
+                },
+                premiumTp: {
+                    label: "Premium TP Ach", 
+                    percentage: kpiTotalPSKUACHPercent,
+                    unit: "Stores",
+                    target: kpiTotalPSKUTGT, 
+                    achieved: kpiTotalPSKUACH, 
+                    rag: null, 
+                    actualValue: kpiTotalPSKUACHPercent.toFixed(2) + "%"
+                }
+            };
+            return newKpiData;
+        }
+
+        function createKpiCard(kpi) {
+            const rag = kpi.rag || getRAGStatus(kpi.percentage);
+            
+            let mainValue = kpi.actualValue;
+            let subContent = `<p class="text-sm text-gray-500 mt-2 font-medium">${kpi.valueText}</p>`;
+            let mainValueClass = rag.textColor;
+            let comparisonText = ''; 
+
+            if (!kpi.isBenchmark) {
+                const target = kpi.target;
+                const achieved = kpi.achieved;
+                const balance = target - achieved;
+                const unit = kpi.unit;
+
+                const fmtTarget = formatValue(target, unit);
+                const fmtAchieved = formatValue(achieved, unit);
+                const fmtBalance = formatValue(balance, unit);
+                
+                if (kpi.label.includes('MTD STT Ach') || kpi.label.includes('MTD ERC Ach') || kpi.label.includes('Premium TP Ach')) {
+                    const difference = kpi.percentage - timeElapsedPercent;
+                    let diffValue;
+                    let diffClass = difference < 0 ? 'text-red-600' : 'text-green-600';
+                    
+                    if (difference < 0) {
+                        diffValue = `-${Math.abs(difference).toFixed(2)}%`;
+                    } else {
+                        diffValue = `+${difference.toFixed(2)}%`;
+                    }
+
+                    comparisonText = `
+                        <div class="flex justify-between items-center text-gray-600">
+                            <span class="text-xs font-medium">vs. Time Elapsed (${timeElapsedPercent.toFixed(2)}%):</span>
+                            <span class="font-bold text-sm ${diffClass}">${diffValue}</span>
+                        </div>
+                    `;
+
+                    mainValue = kpi.percentage.toFixed(2) + '%'; 
+                    mainValueClass = rag.textColor; 
+                    
+                } else if (kpi.label.includes('SF TBR Ach')) {
+                    mainValue = formatCount(achieved);
+                    mainValueClass = rag.textColor;
+                } else {
+                    mainValue = kpi.percentage.toFixed(2) + '%';
+                    mainValueClass = rag.textColor;
+                }
+
+                const displayUnit = unit === "Lac" ? "Lac" : "";
+
+                let baseContent = `
+                        <!-- Target -->
+                        <div class="flex justify-between items-center text-gray-600">
+                            <span class="text-xs font-medium">TGT (${displayUnit}):</span>
+                            <span class="font-bold text-sm text-gray-700">${fmtTarget}</span>
+                        </div>
+                        <!-- Achieved -->
+                        <div class="flex justify-between items-center text-gray-600">
+                            <span class="text-xs font-medium">Achieved:</span>
+                            <span class="font-bold text-sm ${rag.textColor}">${fmtAchieved}</span>
+                        </div>
+                        <!-- Balance -->
+                        <div class="flex justify-between items-center text-gray-600">
+                            <span class="text-xs font-medium">Balance:</span>
+                            <span class="font-bold text-sm ${balance >= 0 ? 'text-gray-400' : 'text-red-500'}">${fmtBalance}</span>
+                        </div>
+                `;
+
+                
+                if (comparisonText) {
+                    subContent = `
+                        <div class="mt-3 pt-3 border-t border-gray-100 space-y-1 text-sm">
+                            ${comparisonText}
+                            <div class="space-y-1 pt-1 border-t border-gray-100">
+                                ${baseContent}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    subContent = `
+                        <div class="mt-3 pt-3 border-t border-gray-100 space-y-1 text-sm">
+                            ${baseContent}
+                        </div>
+                    `;
+                }
+                
+            } else {
+                mainValue = kpi.percentage.toFixed(2) + '%';
+                mainValueClass = 'text-blue';
+            }
+            
+            // --- CARD HTML STRUCTURE ---
+            const cardHtml = `
+                <div class="bg-white p-6 rounded-xl shadow-xl transition hover:shadow-2xl border border-gray-100 ${kpi.isBenchmark ? 'col-span-2 md:col-span-1' : ''}">
+                    
+                    <!-- KPI Label and RAG Indicator Dot/Pill -->
+                    <div class="flex items-center justify-between mb-2">
+                        <p class="text-sm font-medium text-gray-500">${kpi.label}</p>
+                        <span class="w-3 h-3 rounded-full ${rag.color.replace('fill-', 'bg-')} ring-2 ring-offset-2 ${rag.ring}"></span>
+                    </div>
+
+                    <!-- Main Achievement Metric (Percentage or Count) -->
+                    <div class="text-3xl md:text-4xl font-extrabold mt-1 ${mainValueClass}">${mainValue}</div>
+                    
+                    <!-- Gauge Meter -->
+                    <div class="gauge-meter mt-4 mb-3">
+                        <div class="gauge-fill ${rag.color}" style="width: ${Math.min(100, kpi.percentage).toFixed(2)}%"></div>
+                    </div>
+                    
+                    <!-- Sub Content (TGT/ACH/BAL or Benchmark Text) -->
+                    ${subContent}
+                </div>
+            `;
+            return cardHtml;
+        }
+
+
+        function populateKpiCards(kpiData) {
+            const container = document.getElementById('kpi-cards');
+            container.innerHTML = '';
+            const orderedKeys = ['timeElapsed', 'mtdStt', 'mtdErc', 'sfTbr', 'premiumTp'];
+            orderedKeys.forEach(key => {
+                const kpi = kpiData[key];
+                if (kpi) {
+                    container.insertAdjacentHTML('beforeend', createKpiCard(kpi));
+                }
+            });
+        }
+        
+        // Generic function to populate a table
+        function populateTable(tableId, dataArray, keyForName, keyForSubtext) {
+            const tableBody = document.getElementById(tableId);
+            const table = tableBody.closest('table');
+            
+            let tfoot = table.querySelector('tfoot');
+            if (tfoot) tfoot.remove();
+
+            tableBody.innerHTML = ''; 
+
+            if (dataArray.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="13" class="text-center py-8 text-gray-500 font-semibold text-lg">No data found for the selected filters.</td></tr>`;
+                return;
+            }
+
+            dataArray
+                .sort((a, b) => b.sttAchPercent - a.sttAchPercent) 
+                .forEach(data => {
+                const sttRag = getRAGStatus(data.sttAchPercent);
+                const ercRag = getRAGStatus(data.ercAchPercent);
+                const tbrRag = getRAGStatus(data.sfTbrAchPercent);
+                const pskuRag = getRAGStatus(data.premiumSkuAchPercent);
+
+                const getAchClass = (percentage) => getRAGStatus(percentage).textColor;
+                
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 transition duration-150';
+                row.innerHTML = `
+                    <td class="px-3 py-3 whitespace-nowrap text-sm font-medium text-gray-900 sticky left-0 bg-white shadow-sm z-10">
+                        ${data[keyForName]}
+                        <div class="text-xs text-gray-500">${data[keyForSubtext] || ''}</div>
+                    </td>
+                    
+                    <!-- STT Performance -->
+                    <td class="px-3 py-3 whitespace-nowrap text-sm text-center text-gray-500">${formatInLac(data.sttTgt)}</td>
+                    <td class="px-3 py-3 whitespace-nowrap text-sm text-center font-medium ${sttRag.textColor}">${formatInLac(data.sttAch)}</td>
+                    <td class="px-3 py-3 whitespace-nowrap text-sm text-center font-bold ${getAchClass(data.sttAchPercent)}">${data.sttAchPercent.toFixed(2)}%</td>
+                    
+                    <!-- ERC Performance -->
+                    <td class="px-3 py-3 whitespace-nowrap text-sm text-center text-gray-500">${formatCount(data.ercTgt)}</td>
+                    <td class="px-3 py-3 whitespace-nowrap text-sm text-center font-medium ${ercRag.textColor}">${formatCount(data.ercAch)}</td>
+                    <td class="px-3 py-3 whitespace-nowrap text-sm text-center font-bold ${getAchClass(data.ercAchPercent)}">${data.ercAchPercent.toFixed(2)}%</td>
+                    
+                    <!-- SF TBR Performance -->
+                    <td class="px-3 py-3 whitespace-nowrap text-sm text-center text-gray-500">${formatCount(data.sfTbrTgt)}</td>
+                    <td class="px-3 py-3 whitespace-nowrap text-sm text-center font-medium ${tbrRag.textColor}">${formatCount(data.sfTbrAch)}</td>
+                    <td class="px-3 py-3 whitespace-nowrap text-sm text-center font-bold ${getAchClass(data.sfTbrAchPercent)}">${data.sfTbrAchPercent.toFixed(2)}%</td>
+                    
+                    <!-- Premium SKU Performance -->
+                    <td class="px-3 py-3 whitespace-nowrap text-sm text-center text-gray-500">${formatCount(data.premiumSkuGoal)}</td>
+                    <td class="px-3 py-3 whitespace-nowrap text-sm text-center font-medium ${pskuRag.textColor}">${formatCount(data.premiumSkuAch)}</td>
+                    <td class="px-3 py-3 whitespace-nowrap text-sm text-center font-bold ${getAchClass(data.premiumSkuAchPercent)}">${data.premiumSkuAchPercent.toFixed(2)}%</td>
+                `;
+                tableBody.appendChild(row);
+            });
+            
+            // --- APPEND GRAND TOTALS ---
+            const grandTotals = calculateGrandTotals(dataArray);
+            tfoot = document.createElement('tfoot');
+            tfoot.className = 'bg-gray-100 border-t-2 border-gray-300';
+            
+            const totalRow = document.createElement('tr');
+            
+            const getAchClassForTotal = (percentage) => getRAGStatus(percentage).textColor;
+            
+            totalRow.innerHTML = `
+                <td class="px-3 py-3 whitespace-nowrap text-sm font-extrabold text-gray-900 sticky left-0 bg-gray-100 shadow-sm z-10">
+                    GRAND TOTAL (${dataArray.length} items)
+                </td>
+                
+                <!-- STT Performance Totals -->
+                <td class="px-3 py-3 whitespace-nowrap text-sm text-center font-bold text-gray-700">${formatInLac(grandTotals.sttTgt)}</td>
+                <td class="px-3 py-3 whitespace-nowrap text-sm text-center font-extrabold text-gray-900">${formatInLac(grandTotals.sttAch)}</td>
+                <td class="px-3 py-3 whitespace-nowrap text-sm text-center font-extrabold ${getAchClassForTotal(grandTotals.sttAchPercent)}">${grandTotals.sttAchPercent.toFixed(2)}%</td>
+                
+                <!-- ERC Performance Totals -->
+                <td class="px-3 py-3 whitespace-nowrap text-sm text-center text-gray-700">${formatCount(grandTotals.ercTgt)}</td>
+                <td class="px-3 py-3 whitespace-nowrap text-sm text-center font-extrabold text-gray-900">${formatCount(grandTotals.ercAch)}</td>
+                <td class="px-3 py-3 whitespace-nowrap text-sm text-center font-extrabold ${getAchClassForTotal(grandTotals.ercAchPercent)}">${grandTotals.ercAchPercent.toFixed(2)}%</td>
+                
+                <!-- SF TBR Performance Totals -->
+                <td class="px-3 py-3 whitespace-nowrap text-sm text-center text-gray-700">${formatCount(grandTotals.sfTbrTgt)}</td>
+                <td class="px-3 py-3 whitespace-nowrap text-sm text-center font-extrabold text-gray-900">${formatCount(grandTotals.sfTbrAch)}</td>
+                <td class="px-3 py-3 whitespace-nowrap text-sm text-center font-extrabold ${getAchClassForTotal(grandTotals.sfTbrAchPercent)}">${grandTotals.sfTbrAchPercent.toFixed(2)}%</td>
+                
+                <!-- Premium SKU Performance Totals -->
+                <td class="px-3 py-3 whitespace-nowrap text-sm text-center text-gray-700">${formatCount(grandTotals.premiumSkuGoal)}</td>
+                <td class="px-3 py-3 whitespace-nowrap text-sm text-center font-extrabold text-gray-900">${formatCount(grandTotals.premiumSkuAch)}</td>
+                <td class="px-3 py-3 whitespace-nowrap text-sm text-center font-extrabold ${getAchClassForTotal(grandTotals.premiumSkuAchPercent)}">${grandTotals.premiumSkuAchPercent.toFixed(2)}%</td>
+            `;
+            
+            tfoot.appendChild(totalRow);
+            table.appendChild(tfoot);
+        }
+
+        function populateTerritoryChart(dataArray) {
+            const chartContainer = document.getElementById('stt-chart');
+            chartContainer.innerHTML = '';
+
+            if (dataArray.length === 0) {
+                chartContainer.innerHTML = `<div class="text-center py-8 text-gray-500 font-semibold">No chart data available for selection.</div>`;
+                return;
+            }
+
+            dataArray
+                .sort((a, b) => b.sttAchPercent - a.sttAchPercent)
+                .forEach((data, index) => {
+                const rank = index + 1; 
+                const achievement = data.sttAchPercent;
+                const status = getRAGStatus(achievement);
+                const barWidth = Math.min(100, achievement).toFixed(2); 
+
+                const gapPercent = achievement - timeElapsedPercent;
+                const formattedGap = `${gapPercent > 0 ? '+' : ''}${gapPercent.toFixed(2)}%`;
+                const gapColorClass = gapPercent >= 0 ? 'text-green-600' : 'text-red-600';
+
+                const chartItem = document.createElement('div');
+                chartItem.className = 'flex items-center';
+                chartItem.innerHTML = `
+                    <!-- Territory and TM Label -->
+                    <div class="w-1/4 text-sm font-medium text-gray-700 truncate mr-4">
+                        <div class="font-bold text-gray-900 truncate">#${rank} ${data.territory}</div>
+                        <div class="text-xs text-gray-500 truncate">${data.tm}</div>
+                    </div>
+
+                    <!-- Bar and Gap -->
+                    <div class="w-3/4 bg-gray-200 rounded-full h-8 flex items-center relative">
+                        <!-- Target Line (Benchmark: 42.31%) -->
+                        <div class="absolute h-full w-[2px] bg-blue-500 border-dashed border-l border-blue-700" style="left: ${timeElapsedPercent.toFixed(2)}%;"></div>
+
+                        <div class="chart-bar h-full rounded-full flex items-center justify-end pr-2 text-white font-bold text-xs ${status.color}" style="width: ${barWidth}%;">
+                            ${achievement.toFixed(1)}%
+                        </div>
+                        <!-- Display GAP: [+/-]XX.XX% -->
+                        <span class="absolute right-2 text-xs font-bold ${gapColorClass}">
+                            GAP: ${formattedGap}
+                        </span>
+                    </div>
+                `;
+                chartContainer.appendChild(chartItem);
+            });
+        }
+
+        // (FIXED) ADDED updateDbStatus function definition
+        function updateDbStatus(dbDataArray) {
+            const dbHealthContainer = document.getElementById('db-health');
+            if (!dbHealthContainer) return;
+
+            let green = 0;
+            let amber = 0;
+            let red = 0;
+            const total = dbDataArray.length;
+
+            dbDataArray.forEach(db => {
+                const status = getRAGStatus(db.sttAchPercent);
+                if (status.text === 'Green') green++;
+                else if (status.text === 'Amber') amber++;
+                else red++;
+            });
+
+            const greenPct = total > 0 ? (green / total) * 100 : 0;
+            const amberPct = total > 0 ? (amber / total) * 100 : 0;
+            const redPct = total > 0 ? (red / total) * 100 : 0;
+
+            dbHealthContainer.innerHTML = `
+                <h3 class="text-md font-semibold text-gray-700 mb-2">DB Status (Total: ${total})</h3>
+                <div class="flex h-6 rounded-full overflow-hidden text-xs font-semibold">
+                    <div class="chart-bar fill-green text-center text-white p-1" style="width: ${greenPct}%;">${green > 0 ? green : ''}</div>
+                    <div class="chart-bar fill-amber text-center text-white p-1" style="width: ${amberPct}%; ${amberPct > 0 ? '' : 'min-width: 1.5rem;'}">${amber}</div> 
+                    <div class="chart-bar fill-red text-center text-white p-1" style="width: ${redPct}%;">${red > 0 ? red : ''}</div>
+                </div>
+                <div class="flex justify-between text-xs mt-1">
+                    <span class="text-green">Above 90%: ${green}</span>
+                    <span class="text-amber">85-90%: ${amber}</span>
+                    <span class="text-red">Below 85%: ${red}</span>
+                </div>
+            `;
+        }
+        
+        function applyFilters() {
+            let filteredTerritories = [...fullTerritoryData];
+            let filteredDbs = [...fullDbData];
+
+            // 1. Filter by Area
+            if (selectedFilters.Area !== 'All Areas') {
+                filteredTerritories = filteredTerritories.filter(data => data.area === selectedFilters.Area);
+                filteredDbs = filteredDbs.filter(data => data.area === selectedFilters.Area);
+            }
+
+            // 2. Filter by Territory
+            if (selectedFilters.Territory !== 'All Territories') {
+                filteredTerritories = filteredTerritories.filter(data => data.territory === selectedFilters.Territory);
+                filteredDbs = filteredDbs.filter(data => data.territory === selectedFilters.Territory);
+            }
+
+            // 3. Filter by DB Name (dhName key)
+            if (selectedFilters['DB Name'] !== 'All DBs') {
+                // When filtering by DB Name, we *only* want to see that DB's territories (if any)
+                filteredTerritories = filteredTerritories.filter(data => data.dhName === selectedFilters['DB Name']);
+                filteredDbs = filteredDbs.filter(data => data.dhName === selectedFilters['DB Name']);
+            }
+
+            // Determine which data to use for KPI calculation
+            let dataForKpiTotals;
+            
+            if (selectedFilters['DB Name'] !== 'All DBs') {
+                // If a specific DB is selected, KPIs should reflect only that DB
+                dataForKpiTotals = filteredDbs;
+            } else if (selectedFilters.Territory !== 'All Territories') {
+                 // If a specific Territory is selected (but not a DB), KPIs reflect that Territory
+                dataForKpiTotals = filteredTerritories;
+            } else if (selectedFilters.Area !== 'All Areas') {
+                // If a specific Area is selected (but not Territory or DB), KPIs reflect that Area
+                dataForKpiTotals = filteredTerritories;
+            } else {
+                // If no filters are active, KPIs reflect the full company summary
+                dataForKpiTotals = fullTerritoryData; 
+            }
+
+
+            // 4. Recalculate KPIs based on filtered data
+            const totals = calculateGrandTotals(dataForKpiTotals);
+            const newKpiData = updateKpiData(totals);
+
+            // 5. Re-render all components
+            populateKpiCards(newKpiData);
+            populateTable('territory-list', filteredTerritories, 'territory', 'tm');
+            populateTable('db-list', filteredDbs, 'dhName', 'territory');
+            populateTerritoryChart(filteredTerritories);
+            updateDbStatus(filteredDbs); // (FIXED) Update DB status card on filter
+        }
+
+        function initializeFilters() {
+            const filterControls = document.getElementById('filter-controls');
+            filterControls.innerHTML = '';
+
+            Object.keys(filterOptions).forEach(filterName => {
+                const options = filterOptions[filterName];
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'flex flex-col text-sm';
+
+                const label = document.createElement('label');
+                label.textContent = filterName;
+                label.htmlFor = `filter-${filterName.replace(/\s/g, '')}`;
+                label.className = 'text-xs font-semibold text-gray-200 mb-1 pl-1'; 
+                
+                const select = document.createElement('select');
+                select.id = `filter-${filterName.replace(/\s/g, '')}`;
+                select.className = 'py-2 px-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-700 bg-white cursor-pointer transition-all duration-150';
+                
+                // Attach event listener to update selection and re-apply filters
+                select.addEventListener('change', (event) => {
+                    const selectedValue = event.target.value;
+                    selectedFilters[filterName] = selectedValue;
+                    
+                    // Logic to reset dependent filters
+                    if (filterName === 'Area') {
+                        selectedFilters.Territory = 'All Territories';
+                        selectedFilters['DB Name'] = 'All DBs';
+                        // (Future enhancement: dynamically repopulate Territory/DB lists based on Area)
+                    } else if (filterName === 'Territory') {
+                        selectedFilters['DB Name'] = 'All DBs';
+                        // (Future enhancement: dynamically repopulate DB list based on Territory)
+                    }
+                    
+                    applyFilters(); // Trigger filtering and re-rendering
+                });
+
+                options.forEach(optionText => {
+                    const option = document.createElement('option');
+                    option.value = optionText;
+                    option.textContent = optionText;
+                    select.appendChild(option);
+                });
+                
+                wrapper.appendChild(label);
+                wrapper.appendChild(select);
+                filterControls.appendChild(wrapper);
+            });
+        }
+
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Calculate initial KPIs based on all data
+            // Use fullTerritoryData for initial KPI calculation as it aligns with the summary row totals
+            const initialTotals = calculateGrandTotals(fullTerritoryData);
+            const initialKpiData = updateKpiData(initialTotals);
+
+            // Render all components
+            populateKpiCards(initialKpiData);
+            populateTable('territory-list', fullTerritoryData, 'territory', 'tm');
+            populateTable('db-list', fullDbData, 'dhName', 'territory');
+            populateTerritoryChart(fullTerritoryData);
+            updateDbStatus(fullDbData); // (FIXED) Initial dynamic load of DB status
+            initializeFilters(); 
+        });
+    </script>
+</body>
+</html>
