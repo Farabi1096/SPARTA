@@ -27,7 +27,7 @@
         .gauge-fill {
             transition: width 0.7s ease-out;
             border-radius: 9999px;
-            height: 100%; /* <-- FIXED: Added height 100% to fill the meter */
+            height: 100%; 
         }
         /* RAG Colors for Gauge Fill & Background */
         .fill-green { background-color: #10b981; } /* Emerald-500 */
@@ -130,11 +130,8 @@
                 <div id="sr-health" class="mb-4">
                     <h3 class="text-md font-semibold text-gray-700 mb-2">SR Status (Total: 53)</h3>
                     <div class="flex h-6 rounded-full overflow-hidden text-xs font-semibold">
-                        <!-- Green: 12 / 53 = 22.64% (From Overview) -->
                         <div class="chart-bar fill-green text-center text-white p-1" style="width: 22.64%;">12</div>
-                        <!-- Amber: 8 / 53 = 15.09% (From Overview) -->
                         <div class="chart-bar fill-amber text-center text-white p-1" style="width: 15.09%;">8</div>
-                        <!-- Red: 33 / 53 = 62.26% (From Overview) -->
                         <div class="chart-bar fill-red text-center text-white p-1" style="width: 62.26%;">33</div>
                     </div>
                     <div class="flex justify-between text-xs mt-1">
@@ -148,11 +145,8 @@
                 <div id="db-health">
                     <h3 class="text-md font-semibold text-gray-700 mb-2">DB Status (Total: 12)</h3>
                     <div class="flex h-6 rounded-full overflow-hidden text-xs font-semibold">
-                        <!-- Placeholder: Green -->
                         <div id="db-bar-green" class="chart-bar fill-green text-center text-white p-1" style="width: 0%;">0</div>
-                        <!-- Placeholder: Amber -->
                         <div id="db-bar-amber" class="chart-bar fill-amber text-center text-white p-1" style="width: 0%; min-width: 1.5rem;">0</div> 
-                        <!-- Placeholder: Red -->
                         <div id="db-bar-red" class="chart-bar fill-red text-center text-white p-1" style="width: 0%;">0</div>
                     </div>
                     <div class="flex justify-between text-xs mt-1">
@@ -163,13 +157,24 @@
                 </div>
             </div>
 
-            <!-- Territory STT Achievement Chart -->
-            <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg border border-gray-100">
-                <h2 class="text-xl font-bold text-gray-800 mb-4">Territory STT Achievement vs. Target</h2>
-                <p class="text-sm font-semibold text-gray-500 mb-4">Time Elapsed Target: <span class="text-blue">42.31%</span> (Ranked by Achievement)</p>
+            <!-- Chart Section (Now contains both charts, toggled by tabs) -->
+            <div class="lg:col-span-2">
+                <!-- Territory STT Achievement Chart (Visible by default) -->
+                <div id="territory-chart-container" style="display: block;" class="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Territory STT Achievement vs. Target</h2>
+                    <p class="text-sm font-semibold text-gray-500 mb-4">Time Elapsed Target: <span class="text-blue">42.31%</span> (Ranked by Achievement)</p>
+                    <div id="stt-chart" class="space-y-4">
+                        <!-- Chart bars populated by JS -->
+                    </div>
+                </div>
 
-                <div id="stt-chart" class="space-y-4">
-                    <!-- Chart bars populated by JS -->
+                <!-- DB STT Achievement Chart (Hidden by default) -->
+                <div id="db-chart-container" style="display: none;" class="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">DB STT Achievement vs. Target</h2>
+                    <p class="text-sm font-semibold text-gray-500 mb-4">Time Elapsed Target: <span class="text-blue">42.31%</span> (Ranked by Achievement)</p>
+                    <div id="db-stt-chart" class="space-y-4">
+                        <!-- Chart bars populated by JS -->
+                    </div>
                 </div>
             </div>
 
@@ -189,23 +194,15 @@
                             <thead class="bg-gray-50">
                                 <tr>
                                     <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Territory</th>
-                                    
-                                    <!-- STT (Sales to Trade) -->
                                     <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">STT TGT (Lac)</th>
                                     <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">STT Ach (Lac)</th>
                                     <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">STT Ach %</th>
-                                    
-                                    <!-- ERC (Effective Reach Coverage) - REMOVED (Count) -->
                                     <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ERC TGT</th>
                                     <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ERC Ach</th>
                                     <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ERC Ach %</th>
-
-                                    <!-- SF TBR (Sales Force Target Business Review) - REMOVED (Count) -->
                                     <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">SF TBR TGT</th>
                                     <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">SF TBR Ach</th>
                                     <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">SF TBR Ach %</th>
-                                    
-                                    <!-- Premium SKU - REMOVED (Count) -->
                                     <th scope="col" scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">P.SKU TGT</th>
                                     <th scope="col" scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">P.SKU Ach</th>
                                     <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">P.SKU Ach %</th>
@@ -231,23 +228,15 @@
                             <thead class="bg-gray-50">
                                 <tr>
                                     <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DB Name</th>
-                                    
-                                    <!-- STT (Sales to Trade) -->
                                     <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">STT TGT (Lac)</th>
                                     <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">STT Ach (Lac)</th>
                                     <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">STT Ach %</th>
-                                    
-                                    <!-- ERC (Effective Reach Coverage) - REMOVED (Count) -->
                                     <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ERC TGT</th>
                                     <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ERC Ach</th>
                                     <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ERC Ach %</th>
-
-                                    <!-- SF TBR (Sales Force Target Business Review) - REMOVED (Count) -->
                                     <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">SF TBR TGT</th>
                                     <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">SF TBR Ach</th>
                                     <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">SF TBR Ach %</th>
-                                    
-                                    <!-- Premium SKU - REMOVED (Count) -->
                                     <th scope="col" scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">P.SKU TGT</th>
                                     <th scope="col" scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">P.SKU Ach</th>
                                     <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">P.SKU Ach %</th>
@@ -762,6 +751,55 @@
             });
         }
 
+        // NEW function to populate the DB chart
+        function populateDbChart(dataArray) {
+            const chartContainer = document.getElementById('db-stt-chart');
+            chartContainer.innerHTML = '';
+
+            if (dataArray.length === 0) {
+                chartContainer.innerHTML = `<div class="text-center py-8 text-gray-500 font-semibold">No chart data available for selection.</div>`;
+                return;
+            }
+
+            dataArray
+                .sort((a, b) => b.sttAchPercent - a.sttAchPercent)
+                .forEach((data, index) => {
+                const rank = index + 1; 
+                const achievement = data.sttAchPercent;
+                const status = getRAGStatus(achievement);
+                const barWidth = Math.min(100, achievement).toFixed(2); 
+
+                const gapPercent = achievement - timeElapsedPercent;
+                const formattedGap = `${gapPercent > 0 ? '+' : ''}${gapPercent.toFixed(2)}%`;
+                const gapColorClass = gapPercent >= 0 ? 'text-green-600' : 'text-red-600';
+
+                const chartItem = document.createElement('div');
+                chartItem.className = 'flex items-center';
+                chartItem.innerHTML = `
+                    <!-- DB Name and Territory Label -->
+                    <div class="w-1/4 text-sm font-medium text-gray-700 truncate mr-4">
+                        <div class="font-bold text-gray-900 truncate">#${rank} ${data.dhName}</div>
+                        <div class="text-xs text-gray-500 truncate">${data.territory}</div>
+                    </div>
+
+                    <!-- Bar and Gap -->
+                    <div class="w-3/4 bg-gray-200 rounded-full h-8 flex items-center relative">
+                        <!-- Target Line (Benchmark: 42.31%) -->
+                        <div class="absolute h-full w-[2px] bg-blue-500 border-dashed border-l border-blue-700" style="left: ${timeElapsedPercent.toFixed(2)}%;"></div>
+
+                        <div class="chart-bar h-full rounded-full flex items-center justify-end pr-2 text-white font-bold text-xs ${status.color}" style="width: ${barWidth}%;">
+                            ${achievement.toFixed(1)}%
+                        </div>
+                        <!-- Display GAP: [+/-]XX.XX% -->
+                        <span class="absolute right-2 text-xs font-bold ${gapColorClass}">
+                            GAP: ${formattedGap}
+                        </span>
+                    </div>
+                `;
+                chartContainer.appendChild(chartItem);
+            });
+        }
+
         function updateDbStatus(dbDataArray) {
             const dbHealthContainer = document.getElementById('db-health');
             if (!dbHealthContainer) return;
@@ -815,7 +853,6 @@
 
             // 3. Filter by DB Name (dhName key)
             if (selectedFilters['DB Name'] !== 'All DBs') {
-                // When filtering by DB Name, we *only* want to see that DB's territories (if any)
                 filteredTerritories = filteredTerritories.filter(data => data.dhName === selectedFilters['DB Name']);
                 filteredDbs = filteredDbs.filter(data => data.dhName === selectedFilters['DB Name']);
             }
@@ -824,19 +861,14 @@
             let dataForKpiTotals;
             
             if (selectedFilters['DB Name'] !== 'All DBs') {
-                // If a specific DB is selected, KPIs should reflect only that DB
                 dataForKpiTotals = filteredDbs;
             } else if (selectedFilters.Territory !== 'All Territories') {
-                 // If a specific Territory is selected (but not a DB), KPIs reflect that Territory
                 dataForKpiTotals = filteredTerritories;
             } else if (selectedFilters.Area !== 'All Areas') {
-                // If a specific Area is selected (but not Territory or DB), KPIs reflect that Area
                 dataForKpiTotals = filteredTerritories;
             } else {
-                // If no filters are active, KPIs reflect the full company summary (using territory data as base)
                 dataForKpiTotals = fullTerritoryData; 
             }
-
 
             // 4. Recalculate KPIs based on filtered data
             const totals = calculateGrandTotals(dataForKpiTotals);
@@ -847,7 +879,8 @@
             populateTable('territory-list', filteredTerritories, 'territory', 'tm');
             populateTable('db-list', filteredDbs, 'dhName', 'territory');
             populateTerritoryChart(filteredTerritories);
-            updateDbStatus(filteredDbs); // (FIXED) Update DB status card on filter
+            populateDbChart(filteredDbs); // (FIXED) Also update DB chart on filter
+            updateDbStatus(filteredDbs); 
         }
 
         function initializeFilters() {
@@ -903,13 +936,20 @@
         function initializeTabs() {
             const tabTerritory = document.getElementById('tab-territory');
             const tabDb = document.getElementById('tab-db');
+            
             const panelTerritory = document.getElementById('panel-territory');
             const panelDb = document.getElementById('panel-db');
+            
+            const chartTerritory = document.getElementById('territory-chart-container');
+            const chartDb = document.getElementById('db-chart-container');
 
             tabTerritory.addEventListener('click', () => {
-                // Show Territory Panel
+                // Show Territory Panel & Chart
                 panelTerritory.style.display = 'block';
+                chartTerritory.style.display = 'block';
                 panelDb.style.display = 'none';
+                chartDb.style.display = 'none';
+                
                 // Set Tab Styles
                 tabTerritory.classList.add('tab-active');
                 tabTerritory.classList.remove('tab-inactive');
@@ -918,9 +958,12 @@
             });
 
             tabDb.addEventListener('click', () => {
-                // Show DB Panel
+                // Show DB Panel & Chart
                 panelTerritory.style.display = 'none';
+                chartTerritory.style.display = 'none';
                 panelDb.style.display = 'block';
+                chartDb.style.display = 'block';
+                
                 // Set Tab Styles
                 tabDb.classList.add('tab-active');
                 tabDb.classList.remove('tab-inactive');
@@ -942,9 +985,10 @@
             populateTable('territory-list', fullTerritoryData, 'territory', 'tm');
             populateTable('db-list', fullDbData, 'dhName', 'territory');
             populateTerritoryChart(fullTerritoryData);
-            updateDbStatus(fullDbData); // (FIXED) Initial dynamic load of DB status
+            populateDbChart(fullDbData); // (FIXED) Initial render of DB chart
+            updateDbStatus(fullDbData); 
             initializeFilters(); 
-            initializeTabs(); // (FIXED) Initialize tab switching logic
+            initializeTabs();
         });
     </script>
 </body>
