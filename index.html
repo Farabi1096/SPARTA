@@ -124,7 +124,6 @@
         <!-- Section 2: Visuals (Toggled Panels) -->
         
         <!-- Visuals Panel 1: Main (DB/SR Health & Territory/DB Chart) -->
-        <!-- FIXED: Changed style="display: block;" to style="display: grid;" to fix initial load layout bug -->
         <div id="visuals-panel-main" style="display: grid;" class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
 
             <!-- Performance Status (DB & SR) -->
@@ -411,7 +410,7 @@
             { area: "CTG", territory: "CTG NORTH & SOUTH", tm: "MONIRUZZAMAN MONIR", lead: "SHAJED KIBRIA", dhCode: "B010", dhName: "M/S Farid Enterprise", dffCode: "BDS0000047", dffName: "Shakkhor Majumdar", sttTgt: 430000, sttAch: 61053, sttAchPercent: 14.2, ercTgt: 313, ercAch: 95, ercAchPercent: 30.4, sfTbrTgt: 100, sfTbrAch: 1, sfTbrAchPercent: 1.0, premiumSkuGoal: 30, premiumSkuAch: 0, premiumSkuAchPercent: 0.0 },
             { area: "CTG", territory: "CTG NORTH & SOUTH", tm: "MONIRUZZAMAN MONIR", lead: "SHAJED KIBRIA", dhCode: "B009", dhName: "ARC Trading", dffCode: "BDS0000038", dffName: "Tipu Das", sttTgt: 640000, sttAch: 249949, sttAchPercent: 39.1, ercTgt: 507, ercAch: 244, ercAchPercent: 48.1, sfTbrTgt: 100, sfTbrAch: 10, sfTbrAchPercent: 10.0, premiumSkuGoal: 55, premiumSkuAch: 4, premiumSkuAchPercent: 7.3 },
             { area: "CTG", territory: "CTG NORTH & SOUTH", tm: "MONIRUZZAMAN MONIR", lead: "SHAJED KIBRIA", dhCode: "B009", dhName: "ARC Trading", dffCode: "BDS0000039", dffName: "MD Abdul Malek", sttTgt: 1600000, sttAch: 474783, sttAchPercent: 29.7, ercTgt: 320, ercAch: 104, ercAchPercent: 32.5, sfTbrTgt: 100, sfTbrAch: 0, sfTbrAchPercent: 0.0, premiumSkuGoal: 25, premiumSkuAch: 0, premiumSkuAchPercent: 0.0 },
-            { area: "CTG", territory: "CTG NORTH & SOUTH", tm: "MONIRUZZAMAN MONIR", lead: "SHAJED KIBRIA", dhCode: "B009", dhName: "ARC Trading", dffCode: "BDS0KeyMap.sfTbrAch = 'sfTbrAch';00040", dffName: "Aiyas Ibne Abedin", sttTgt: 573000, sttAch: 210820, sttAchPercent: 36.8, ercTgt: 473, ercAch: 232, ercAchPercent: 49.0, sfTbrTgt: 100, sfTbrAch: 4, sfTbrAchPercent: 4.0, premiumSkuGoal: 55, premiumSkuAch: 9, premiumSkuAchPercent: 16.4 },
+            { area: "CTG", territory: "CTG NORTH & SOUTH", tm: "MONIRUZZAMAN MONIR", lead: "SHAJED KIBRIA", dhCode: "B009", dhName: "ARC Trading", dffCode: "BDS0000040", dffName: "Aiyas Ibne Abedin", sttTgt: 573000, sttAch: 210820, sttAchPercent: 36.8, ercTgt: 473, ercAch: 232, ercAchPercent: 49.0, sfTbrTgt: 100, sfTbrAch: 4, sfTbrAchPercent: 4.0, premiumSkuGoal: 55, premiumSkuAch: 9, premiumSkuAchPercent: 16.4 },
             { area: "CTG", territory: "CTG NORTH & SOUTH", tm: "MONIRUZZAMAN MONIR", lead: "SHAJED KIBRIA", dhCode: "B012", dhName: "P M Traders", dffCode: "BDS0000066", dffName: "Md Arshad", sttTgt: 540000, sttAch: 215079, sttAchPercent: 39.8, ercTgt: 329, ercAch: 248, ercAchPercent: 75.4, sfTbrTgt: 100, sfTbrAch: 7, sfTbrAchPercent: 7.0, premiumSkuGoal: 30, premiumSkuAch: 14, premiumSkuAchPercent: 46.7 },
             { area: "CTG", territory: "CTG NORTH & SOUTH", tm: "MONIRUZZAMAN MONIR", lead: "SHAJED KIBRIA", dhCode: "B012", dhName: "P M Traders", dffCode: "BDS0000067", dffName: "Md Forhad", sttTgt: 460000, sttAch: 190606, sttAchPercent: 41.4, ercTgt: 361, ercAch: 307, ercAchPercent: 85.0, sfTbrTgt: 100, sfTbrAch: 1, sfTbrAchPercent: 1.0, premiumSkuGoal: 30, premiumSkuAch: 5, premiumSkuAchPercent: 16.7 },
             { area: "CTG", territory: "CTG NORTH & SOUTH", tm: "MONIRUZZAMAN MONIR", lead: "SHAJED KIBRIA", dhCode: "B013", dhName: "Madina Traders", dffCode: "BDS0000068", dffName: "Md Shojibul Islam", sttTgt: 460000, sttAch: 199184, sttAchPercent: 43.3, ercTgt: 299, ercAch: 181, ercAchPercent: 60.5, sfTbrTgt: 100, sfTbrAch: 0, sfTbrAchPercent: 0.0, premiumSkuGoal: 30, premiumSkuAch: 0, premiumSkuAchPercent: 0.0 },
@@ -854,7 +853,7 @@
                     </div>
 
                     <!-- Bar and Gap -->
-                    <div class="w-3/4 bg-gray-200 rounded-full h-8 flex items-center relative">
+                    <div class="w-2/3 bg-gray-200 rounded-full h-8 flex items-center relative">
                         <!-- Target Line (Benchmark: 42.31%) -->
                         <div class="absolute h-full w-[2px] bg-blue-500 border-dashed border-l border-blue-700" style="left: ${timeElapsedPercent.toFixed(2)}%;"></div>
 
@@ -903,7 +902,7 @@
                     </div>
 
                     <!-- Bar and Gap -->
-                    <div class="w-3/4 bg-gray-200 rounded-full h-8 flex items-center relative">
+                    <div class="w-2/3 bg-gray-200 rounded-full h-8 flex items-center relative">
                         <!-- Target Line (Benchmark: 42.31%) -->
                         <div class="absolute h-full w-[2px] bg-blue-500 border-dashed border-l border-blue-700" style="left: ${timeElapsedPercent.toFixed(2)}%;"></div>
 
@@ -939,6 +938,14 @@
             const top10 = sortedData.slice(0, 10);
             top10.forEach((data, index) => {
                 const rank = index + 1; 
+                let rankDisplay;
+                switch(rank) {
+                    case 1: rankDisplay = '🥇 #1'; break;
+                    case 2: rankDisplay = '🥈 #2'; break;
+                    case 3: rankDisplay = '🥉 #3'; break;
+                    default: rankDisplay = `#${rank}`;
+                }
+                
                 const achievement = data.sttAchPercent;
                 const status = getRAGStatus(achievement);
                 const barWidth = Math.min(100, achievement).toFixed(2); 
@@ -950,7 +957,7 @@
                 chartItem.className = 'flex items-center';
                 chartItem.innerHTML = `
                     <div class="w-1/3 text-sm font-medium text-gray-700 truncate mr-4">
-                        <div class="font-bold text-gray-900 truncate">#${rank} ${data.dffName}</div>
+                        <div class="font-bold text-gray-900 truncate">${rankDisplay} ${data.dffName}</div>
                         <div class="text-xs text-gray-500 truncate">${data.territory}</div>
                     </div>
                     <div class="w-2/3 bg-gray-200 rounded-full h-8 flex items-center relative">
@@ -1071,14 +1078,21 @@
                  dataForKpiTotals = filteredTerritories;
             }
             
-            // If no filters are active, use the main summary data
+            // If no filters are active, use the *correct* full data set for the active tab
+            // (FIXED) Check all filters, not just DB Name
             if (selectedFilters.Area === 'All Areas' && selectedFilters.Territory === 'All Territories' && selectedFilters['DB Name'] === 'All DBs') {
-                 dataForKpiTotals = fullTerritoryData; // Use territory summary for 'All'
+                 if(activeTab === 'sr') {
+                    dataForKpiTotals = fullSrData;
+                 } else if (activeTab === 'db') {
+                    dataForKpiTotals = fullDbData;
+                 } else {
+                    dataForKpiTotals = fullTerritoryData; 
+                 }
             }
 
 
             // 4. Recalculate KPIs based on filtered data
-            const totals = calculateGrandTotals(dataForKpiTotals, activeTab);
+            const totals = calculateGrandTotals(dataForKpiTotals, activeTab); 
             const newKpiData = updateKpiData(totals);
 
             // 5. Re-render all components
