@@ -284,6 +284,7 @@
         // --- DYNAMIC VARIABLES (Calculated based on data) ---
         let timeElapsedPercent = 0; 
         let daysPassed = "";
+        let totalWorkingDaysInMonth = 26; // Default fallback
         const LAC_DIVISOR = 100000;
         
         let selectedFilters = {
@@ -465,9 +466,10 @@
                 
                 if (dailyRawData.length > 0) {
                      // Sort to be sure we get the absolute latest date present in data
+                     // This ensures that even if data spans multiple months, we grab the latest one
                     const sortedDates = dailyRawData
                         .map(r => new Date(r.calday))
-                        .filter(d => !isNaN(d))
+                        .filter(d => !isNaN(d.getTime()))
                         .sort((a,b) => b - a);
                     
                     if (sortedDates.length > 0) {
@@ -492,13 +494,20 @@
                 document.getElementById('data-date').innerText = `(Data as of ${dateDisplay})`;
 
                 // Calculate Working Days & Percentage
+                // IMPORTANT: Use the year and month of the LATEST date found in the report
                 const currentYear = maxDate.getFullYear();
                 const currentMonth = maxDate.getMonth(); // 0-indexed
                 const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
                 
+                // Passed: count working days from the 1st of THIS month to the latest date
+                // This correctly handles "Last date count for month" logic
                 const passed = countWorkingDays(currentYear, currentMonth, day);
+                // Total: count working days for the ENTIRE month of the latest date
                 const total = countWorkingDays(currentYear, currentMonth, daysInMonth);
                 
+                // Update global variable for chart use
+                totalWorkingDaysInMonth = total;
+
                 daysPassed = `${passed} out of ${total}`;
                 timeElapsedPercent = (total > 0) ? (passed / total) * 100 : 0;
                 
@@ -607,7 +616,9 @@
             const barBackgroundColors = chartDataRaw.map(d => d.dateObj.getDay() === 5 ? 'rgba(239, 68, 68, 0.8)' : 'rgba(17, 153, 142, 0.7)');
             const barBorderColors = chartDataRaw.map(d => d.dateObj.getDay() === 5 ? 'rgba(220, 38, 38, 1)' : 'rgba(17, 153, 142, 1)');
             
-            const dailyRrValue = (totalTarget / 26) / LAC_DIVISOR;
+            // Use dynamic total working days instead of hardcoded 26
+            const divisor = totalWorkingDaysInMonth > 0 ? totalWorkingDaysInMonth : 26;
+            const dailyRrValue = (totalTarget / divisor) / LAC_DIVISOR;
             const rrData = new Array(labels.length).fill(dailyRrValue);
 
             if (comboChartInstance) comboChartInstance.destroy();
